@@ -91,12 +91,14 @@ export const DRUMS = [
 // ---------- Beinecke Terrace Room (semi-oval bulging east) + outdoor terrace
 export const BEIN = { c: [EAST, 0], r: 10, terrace: 14, doorGap: 0.13, muralR: 3.6, muralHalf: 0.85 }
 
-// ---------- stairs (painting above each opening)
+// ---------- stairs (painting above each opening). `lift` marks the shared stair + elevator cores
+// that repeat full-height on every floor (see CORES in building.js); on this floor they get a door
+// opening so the player can step into the elevator instead of a solid block.
 export const STAIRS = [
-  { id: 'A', c: [-34.75, 15.5], w: 5, d: 3, face: [1, 0], seed: 1 },
-  { id: 'B', c: [-34.75, -15.5], w: 5, d: 3, face: [1, 0], seed: 2 },
-  { id: 'G', c: [24.6, 25], w: 3, d: 4, face: [0, -1], photo: true },
-  { id: 'D', c: [24.6, -25], w: 3, d: 4, face: [0, 1], seed: 3 },
+  { id: 'A', c: [-34.75, 15.5], w: 5, d: 3, face: [1, 0], seed: 1, lift: true },
+  { id: 'B', c: [-34.75, -15.5], w: 5, d: 3, face: [1, 0], seed: 2, lift: true },
+  { id: 'G', c: [24.6, 25], w: 3, d: 4, face: [0, -1], photo: true, lift: true },
+  { id: 'D', c: [24.6, -25], w: 3, d: 4, face: [0, 1], seed: 3, lift: true },
   { id: 'C', c: [24.6, -45], w: 3, d: 4, face: [0, 1], seed: 4 },
   { id: 'H', c: [24.6, 45], w: 3, d: 4, face: [0, -1], seed: 5 },
   { id: 'I', c: [-37.75, 45], w: 3, d: 4, face: [0, -1], seed: 6 },
@@ -209,13 +211,40 @@ for (const d of DRUMS) {
   for (const z of [-8, -4, 4, 8]) for (const s of [-1, 1]) CHAIRS.push({ x: tx + s * 0.75, z, rot: s > 0 ? -Math.PI / 2 : Math.PI / 2 })
 }
 
-// stairs: solid white cores
+// stairs: solid white cores; shared stair+elevator cores (`lift`) get a door on the face side
 for (const s of STAIRS) {
   const [cx, cz] = s.c
   const hw = s.w / 2
   const hd = s.d / 2
-  const q = [[cx - hw, cz - hd], [cx + hw, cz - hd], [cx + hw, cz + hd], [cx - hw, cz + hd], [cx - hw, cz - hd]]
-  P(q, 'white')
+  if (s.lift) {
+    const [fx, fz] = s.face
+    const side = fx > 0 ? 'E' : fx < 0 ? 'W' : fz > 0 ? 'S' : 'N'
+    const edges = {
+      N: [[cx - hw, cz - hd], [cx + hw, cz - hd]],
+      S: [[cx - hw, cz + hd], [cx + hw, cz + hd]],
+      W: [[cx - hw, cz - hd], [cx - hw, cz + hd]],
+      E: [[cx + hw, cz - hd], [cx + hw, cz + hd]],
+    }
+    const g = 0.9
+    for (const [k, [A, B]] of Object.entries(edges)) {
+      if (k === side) {
+        const mx = (A[0] + B[0]) / 2
+        const mz = (A[1] + B[1]) / 2
+        const dx = B[0] - A[0]
+        const dz = B[1] - A[1]
+        const len = Math.hypot(dx, dz) || 1
+        const ux = dx / len
+        const uz = dz / len
+        W(A, [mx - ux * g, mz - uz * g], 'white')
+        W([mx + ux * g, mz + uz * g], B, 'white')
+      } else {
+        W(A, B, 'white')
+      }
+    }
+  } else {
+    const q = [[cx - hw, cz - hd], [cx + hw, cz - hd], [cx + hw, cz + hd], [cx - hw, cz + hd], [cx - hw, cz - hd]]
+    P(q, 'white')
+  }
 }
 
 // small glass meeting rooms in strips behind each drum row

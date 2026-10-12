@@ -176,7 +176,7 @@ function Atmosphere() {
 }
 
 // ---------- floor + ceiling with the courtyard hole
-function FloorAndCeiling({ M }) {
+function FloorAndCeiling({ M, ground = true }) {
   const [floor, ceil, lawn] = useMemo(() => {
     const { xMin, xMax, zMin, zMax } = BOUNDS
     const make = (flip) => {
@@ -197,14 +197,16 @@ function FloorAndCeiling({ M }) {
       <mesh geometry={floor} material={M.carpet} />
       <mesh geometry={ceil} material={M.ceiling} position={[0, H, 0]} />
       <mesh geometry={lawn} material={M.lawn} position={[0, -5, 0]} />
-      <mesh material={M.ground} rotation={[-Math.PI / 2, 0, 0]} position={[0, -5.05, 0]}>
-        <planeGeometry args={[600, 600]} />
-      </mesh>
+      {ground && (
+        <mesh material={M.ground} rotation={[-Math.PI / 2, 0, 0]} position={[0, -5.05, 0]}>
+          <planeGeometry args={[600, 600]} />
+        </mesh>
+      )}
     </>
   )
 }
 
-function Courtyard({ M }) {
+function Courtyard({ M, showGlass = true, cafeGlass = false }) {
   const glass = useMemo(() => ribbon(COURTYARD, 0, H), [])
   const cafe = useMemo(() => ribbon(COURTYARD, -5, 0), [])
   const upper = useMemo(() => ribbon(COURTYARD, H, H + 9, 0.12), [])
@@ -227,10 +229,14 @@ function Courtyard({ M }) {
   }, [])
   return (
     <>
-      <mesh geometry={glass} material={M.glass} />
-      <mesh geometry={cafe} material={M.cafe} />
-      <mesh geometry={upper} material={M.upper} />
-      <Instanced items={mullions} material={M.mullion} geometry={BOX} />
+      {showGlass && (
+        <>
+          <mesh geometry={glass} material={M.glass} />
+          <mesh geometry={cafe} material={cafeGlass ? M.glass : M.cafe} />
+          <mesh geometry={upper} material={M.upper} />
+          <Instanced items={mullions} material={M.mullion} geometry={BOX} />
+        </>
+      )}
       <Instanced items={trees.map(([x, z]) => ({ p: [x, -3.5, z], s: [0.35, 3, 0.35] }))} material={M.trunk} geometry={BOX} />
       <Instanced
         items={trees.map(([x, z], i) => ({ p: [x, -0.8 + (i % 3) * 0.6, z], s: [3.2, 2.6, 3.2] }))}
@@ -534,6 +540,30 @@ function Details({ M }) {
       <Instanced items={PLANTS.map(([x, z]) => ({ p: [x, 0.3, z], s: [0.3, 0.6, 0.3] }))} material={M.pot} geometry={BOX} />
       <Instanced items={PLANTS.map(([x, z]) => ({ p: [x, 1.1, z], s: [0.5, 0.65, 0.5] }))} material={M.leaf} geometry={SPHERE} />
       <MeetingRooms M={M} />
+    </>
+  )
+}
+
+// Reusable Evans Hall floor-2 interior + Shen Courtyard, for embedding in the multi-floor SOM
+// build at its native y=0. Skips the sky/atmosphere, the ring of outside trees, and the big
+// ground plane (the SOM scene supplies those). `showGlass` keeps the courtyard curtain wall +
+// lit window bands; set it false if the host scene provides its own glazing.
+export function EvansInterior({ showGlass = true, ground = false, cafeGlass = false }) {
+  const M = useMaterials()
+  return (
+    <>
+      <FloorAndCeiling M={M} ground={ground} />
+      <Courtyard M={M} showGlass={showGlass} cafeGlass={cafeGlass} />
+      <Walls M={M} />
+      <Drums M={M} />
+      <Tiers M={M} />
+      <ClassroomStuff M={M} />
+      <Beinecke M={M} />
+      <Stairs M={M} />
+      <Details M={M} />
+      <LabubuCrowd />
+      <Faculty />
+      <HandsomeDan />
     </>
   )
 }

@@ -5,6 +5,16 @@ dist/
 # raw walk-through photos (people in shot) stay local
 reference/
 
+# large raw capture media + source scans/plans (kept local, not for the public repo)
+First floor photos/
+General-Layout-of-SOM/
+*.HEIC
+*.heic
+*.MP4
+*.mp4
+*.usdz
+*.pdf
+
 # course export has faculty names/emails; keep it local
 courseslist-*.csv
 *.csv

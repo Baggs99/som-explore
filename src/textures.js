@@ -23,15 +23,15 @@ export function rng(seed) {
   return () => (s = (s * 1664525 + 1013904223) >>> 0) / 4294967296
 }
 
-// striped oatmeal carpet from the photos
-export function carpetTex(repeat = [0.25, 0.25], base = '#d6c9b3') {
+// striped oatmeal carpet from the photos (pass darker `cols` for a gray carpet)
+export function carpetTex(repeat = [0.25, 0.25], base = '#d6c9b3', cols) {
   const [c, g] = canvas(512, 512)
   g.fillStyle = base
   g.fillRect(0, 0, 512, 512)
   const r = rng(7)
-  const cols = ['#c4b59c', '#e4d9c6', '#b7b2aa', '#cdbfa8', '#efe6d6']
+  const palette = cols || ['#c4b59c', '#e4d9c6', '#b7b2aa', '#cdbfa8', '#efe6d6']
   for (let i = 0; i < 900; i++) {
-    g.fillStyle = cols[Math.floor(r() * cols.length)]
+    g.fillStyle = palette[Math.floor(r() * palette.length)]
     g.globalAlpha = 0.25 + r() * 0.4
     g.fillRect(r() * 512, 0, 0.6 + r() * 1.6, 512)
   }
@@ -55,6 +55,170 @@ export function drumTex() {
   g.fillStyle = 'rgba(160,190,255,0.08)'
   for (let y = 0; y < 512; y += 128) g.fillRect(0, y + 8, 512, 40)
   return tex(c, [8, 1])
+}
+
+// cork bulletin board: tan with speckle and a few pin holes
+export function corkTex() {
+  const [c, g] = canvas(256, 256)
+  g.fillStyle = '#c69a5b'
+  g.fillRect(0, 0, 256, 256)
+  const r = rng(31)
+  for (let i = 0; i < 6000; i++) {
+    g.fillStyle = r() > 0.5 ? 'rgba(150,108,58,0.5)' : 'rgba(196,158,96,0.5)'
+    g.fillRect(r() * 256, r() * 256, 2, 2)
+  }
+  for (let i = 0; i < 14; i++) {
+    g.fillStyle = 'rgba(80,55,25,0.6)'
+    g.beginPath()
+    g.arc(r() * 256, r() * 256, 2, 0, Math.PI * 2)
+    g.fill()
+  }
+  return tex(c)
+}
+
+// suspended ceiling tiles (2x2 grid, acoustic speckle)
+export function ceilingTileTex() {
+  const [c, g] = canvas(256, 256)
+  g.fillStyle = '#eceae6'
+  g.fillRect(0, 0, 256, 256)
+  const r = rng(17)
+  for (let i = 0; i < 9000; i++) {
+    g.fillStyle = r() > 0.5 ? 'rgba(180,178,172,0.5)' : 'rgba(210,208,202,0.5)'
+    g.fillRect(r() * 256, r() * 256, 1.5, 1.5)
+  }
+  g.strokeStyle = '#c3c1bb'
+  g.lineWidth = 4
+  for (const p of [0, 128, 256]) {
+    g.beginPath(); g.moveTo(p, 0); g.lineTo(p, 256); g.stroke()
+    g.beginPath(); g.moveTo(0, p); g.lineTo(256, p); g.stroke()
+  }
+  return tex(c, [2, 2.4])
+}
+
+// gray woven roller shade / wall panel
+export function shadeTex() {
+  const [c, g] = canvas(128, 128)
+  g.fillStyle = '#c4c7cc'
+  g.fillRect(0, 0, 128, 128)
+  g.strokeStyle = 'rgba(150,153,158,0.5)'
+  g.lineWidth = 1
+  for (let y = 0; y < 128; y += 3) {
+    g.beginPath(); g.moveTo(0, y); g.lineTo(128, y); g.stroke()
+  }
+  return tex(c)
+}
+
+// the "EVENT PARKING $1 CARD ONLY" sandwich-board sign
+export function parkingSignTex() {
+  const [c, g] = canvas(300, 440)
+  g.fillStyle = '#f4f4f2'
+  g.fillRect(0, 0, 300, 440)
+  g.strokeStyle = '#1c3f94'
+  g.lineWidth = 6
+  g.strokeRect(8, 8, 284, 424)
+  g.fillStyle = '#1c3f94'
+  g.beginPath(); g.arc(70, 70, 34, 0, Math.PI * 2); g.fill()
+  g.fillStyle = '#fff'
+  g.font = 'bold 44px Arial, sans-serif'
+  g.fillText('P', 56, 86)
+  g.fillStyle = '#1c3f94'
+  g.font = 'bold 30px Arial, sans-serif'
+  g.fillText('EVENT', 40, 180)
+  g.fillText('PARKING', 24, 216)
+  g.fillStyle = '#e2561f'
+  g.font = 'bold 150px Arial, sans-serif'
+  g.fillText('$1', 80, 340)
+  g.fillStyle = '#1c3f94'
+  g.font = 'bold 26px Arial, sans-serif'
+  g.fillText('CARD ONLY', 36, 400)
+  return tex(c)
+}
+
+// Snyder Forum's dark linear-wood-slat ceiling
+export function darkSlatTex() {
+  const [c, g] = canvas(64, 256)
+  g.fillStyle = '#141210'
+  g.fillRect(0, 0, 64, 256)
+  for (let y = 0; y < 256; y += 9) {
+    g.fillStyle = (y / 9) % 2 ? '#1d1914' : '#231e18'
+    g.fillRect(0, y, 64, 6)
+    g.fillStyle = 'rgba(0,0,0,0.55)'
+    g.fillRect(0, y + 6, 64, 3)
+  }
+  return tex(c, [8, 8])
+}
+
+// frosted "50 YEARS" window decal (transparent background, used on a glass panel)
+export function fiftyYearsTex() {
+  const [c, g] = canvas(512, 256)
+  g.clearRect(0, 0, 512, 256)
+  g.fillStyle = 'rgba(255,255,255,0.9)'
+  g.textAlign = 'center'
+  g.font = 'bold 170px Arial, sans-serif'
+  g.fillText('50', 256, 150)
+  g.font = 'bold 66px Arial, sans-serif'
+  g.fillText('YEARS', 256, 215)
+  const t = new THREE.CanvasTexture(c)
+  t.colorSpace = THREE.SRGBColorSpace
+  t.anisotropy = 8
+  return t
+}
+
+// Sol LeWitt "Wall Drawing" — concentric rainbow bands (the long mural in the student commons)
+export function leWittCircles() {
+  const [c, g] = canvas(1024, 256)
+  g.fillStyle = '#0d0d10'
+  g.fillRect(0, 0, 1024, 256)
+  const cols = ['#d61f26', '#f07f1a', '#f5d416', '#2fa84f', '#1f78c8', '#3b2fb0', '#8e2fb0']
+  for (let r = 640; r > 0; r -= 11) {
+    g.beginPath()
+    g.arc(512, 128, r, 0, Math.PI * 2)
+    g.fillStyle = cols[Math.floor(r / 11) % cols.length]
+    g.fill()
+  }
+  return tex(c)
+}
+
+// Sol LeWitt square print — bands of color (the framed prints in the event/commons rooms)
+export function leWittStripes() {
+  const [c, g] = canvas(256, 256)
+  const cols = ['#d61f26', '#f07f1a', '#f5d416', '#2fa84f', '#1f78c8', '#3b2fb0']
+  for (let i = 0; i < 24; i++) {
+    g.fillStyle = cols[i % cols.length]
+    g.fillRect(0, i * 11, 256, 11)
+  }
+  return tex(c)
+}
+
+// blue digital menu board (servery screens)
+export function menuTex() {
+  const [c, g] = canvas(256, 384)
+  g.fillStyle = '#0b2b5e'
+  g.fillRect(0, 0, 256, 384)
+  g.fillStyle = '#ffffff'
+  g.font = 'bold 26px Arial'
+  g.fillText('TODAY', 18, 44)
+  g.font = '18px Arial'
+  const items = ['Soup of the Day', 'Grill', 'Pasta Bar', 'Salad', 'Grain Bowl', 'Dessert']
+  items.forEach((t, i) => {
+    g.fillStyle = '#cfe0ff'
+    g.fillText(t, 18, 96 + i * 42)
+  })
+  return tex(c)
+}
+
+// light porcelain floor tile for the public circulation / dining / commons
+export function tileTex() {
+  const [c, g] = canvas(256, 256)
+  g.fillStyle = '#e9e6df'
+  g.fillRect(0, 0, 256, 256)
+  g.strokeStyle = 'rgba(150,145,135,0.35)'
+  g.lineWidth = 2
+  for (let i = 0; i <= 256; i += 64) {
+    g.beginPath(); g.moveTo(i, 0); g.lineTo(i, 256); g.stroke()
+    g.beginPath(); g.moveTo(0, i); g.lineTo(256, i); g.stroke()
+  }
+  return tex(c, [6, 6])
 }
 
 export function slatsTex() {

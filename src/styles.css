@@ -76,6 +76,36 @@ body,
   z-index: 5;
 }
 
+/* ---------- SOM floor selector / elevator panel */
+.floors {
+  position: fixed;
+  right: 16px;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  z-index: 6;
+}
+
+.floorbtn {
+  width: 42px;
+  height: 42px;
+  border-radius: 10px;
+  background: rgba(11, 11, 13, 0.82);
+  color: var(--pink-soft);
+  border: 1px solid var(--pink);
+  font-weight: 700;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.floorbtn.on {
+  background: var(--pink);
+  color: var(--black);
+  box-shadow: 0 0 16px rgba(255, 79, 163, 0.6);
+}
+
 .crosshair {
   position: fixed;
   left: 50%;
