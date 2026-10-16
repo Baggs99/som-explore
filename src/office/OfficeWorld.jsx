@@ -1,8 +1,9 @@
-import { useLayoutEffect, useMemo } from 'react'
-import { useThree } from '@react-three/fiber'
+import { useLayoutEffect, useMemo, useRef } from 'react'
+import { useFrame, useThree } from '@react-three/fiber'
 import * as THREE from 'three'
 import { RoomEnvironment } from 'three/examples/jsm/environments/RoomEnvironment.js'
 import * as T from '../textures.js'
+import { navigate } from './mvw.js'
 
 // Hand-authored from the office photos (the blind LiDAR segmentation wasn't
 // faithful). Low-res, procedural, same spirit as the Evans Hall walk-through.
@@ -10,6 +11,10 @@ import * as T from '../textures.js'
 // cork board on the west wall, whiteboard on the east wall.
 export const ROOM = { w: 3.0, d: 5.0, h: 2.7 }
 export const EYE = 1.65
+export const SPAWNS = {
+  default: { pos: [0.9, EYE, ROOM.d / 2 - 0.7], lookAt: [-1.1, EYE, -2.4] },
+  from_square: { pos: [-0.95, EYE, ROOM.d / 2 - 0.85], lookAt: [0, EYE, -1.7] },
+}
 const { w: W, d: D, h: H } = ROOM
 const west = -W / 2
 const east = W / 2
@@ -91,6 +96,82 @@ function Box({ p, s, m, rot = [0, 0, 0] }) {
     <mesh position={p} rotation={rot} material={m} castShadow receiveShadow>
       <boxGeometry args={s} />
     </mesh>
+  )
+}
+
+function portalTexture(text, sub) {
+  const c = document.createElement('canvas')
+  c.width = 512
+  c.height = 160
+  const g = c.getContext('2d')
+  g.fillStyle = 'rgba(12,10,18,0.92)'
+  g.beginPath()
+  g.roundRect(8, 8, 496, 144, 26)
+  g.fill()
+  g.strokeStyle = '#ff4fa3'
+  g.lineWidth = 7
+  g.stroke()
+  g.textAlign = 'center'
+  g.fillStyle = '#fff'
+  g.font = 'bold 44px system-ui, sans-serif'
+  g.fillText(text, 256, 70, 460)
+  g.fillStyle = '#ff9bca'
+  g.font = '26px system-ui, sans-serif'
+  g.fillText(sub, 256, 116, 460)
+  const tex = new THREE.CanvasTexture(c)
+  tex.colorSpace = THREE.SRGBColorSpace
+  return tex
+}
+
+function PortalToSquare({ M }) {
+  const fired = useRef(false)
+  const label = useMemo(() => portalTexture('Metaverse Square', 'walk through portal'), [])
+  const swirl = useMemo(() => {
+    const c = document.createElement('canvas')
+    c.width = c.height = 256
+    const g = c.getContext('2d')
+    const bg = g.createRadialGradient(128, 128, 10, 128, 128, 128)
+    bg.addColorStop(0, '#fff')
+    bg.addColorStop(0.35, '#ff4fa3')
+    bg.addColorStop(1, '#1a0614')
+    g.fillStyle = bg
+    g.fillRect(0, 0, 256, 256)
+    g.strokeStyle = 'rgba(255,255,255,0.55)'
+    g.lineWidth = 5
+    for (let arm = 0; arm < 4; arm++) {
+      g.beginPath()
+      for (let t = 0; t < 1; t += 0.01) {
+        const a = arm * (Math.PI / 2) + t * 7
+        const r = 8 + t * 125
+        const x = 128 + Math.cos(a) * r
+        const y = 128 + Math.sin(a) * r
+        t ? g.lineTo(x, y) : g.moveTo(x, y)
+      }
+      g.stroke()
+    }
+    const tex = new THREE.CanvasTexture(c)
+    tex.colorSpace = THREE.SRGBColorSpace
+    return tex
+  }, [])
+  useFrame(({ camera, clock }) => {
+    swirl.rotation = -clock.elapsedTime * 1.2
+    const inDoorway = Math.abs(camera.position.x + 0.95) < 0.42 && camera.position.z > south - 0.55
+    if (inDoorway && !fired.current) {
+      fired.current = true
+      navigate('https://zlisto.github.io/hub_world/', 'by_hpa_office', 'from_square')
+      setTimeout(() => (fired.current = false), 1600)
+    }
+  })
+  return (
+    <group position={[-0.95, 0, south - 0.08]}>
+      <Box p={[0, 1.18, 0]} s={[0.92, 2.25, 0.06]} m={new THREE.MeshBasicMaterial({ map: swirl, transparent: true, opacity: 0.72 })} />
+      <Box p={[0, 2.55, -0.02]} s={[1.35, 0.1, 0.08]} m={M.hiVis} />
+      <Box p={[-0.51, 1.25, -0.02]} s={[0.1, 2.45, 0.08]} m={M.hiVis} />
+      <Box p={[0.51, 1.25, -0.02]} s={[0.1, 2.45, 0.08]} m={M.hiVis} />
+      <mesh position={[0, 2.95, -0.07]} material={new THREE.MeshBasicMaterial({ map: label, transparent: true })}>
+        <planeGeometry args={[1.55, 0.48]} />
+      </mesh>
+    </group>
   )
 }
 
@@ -219,6 +300,7 @@ export default function OfficeWorld() {
       <mesh position={[west + 0.3, 0.2, 2.1]} material={M.trash}>
         <cylinderGeometry args={[0.15, 0.13, 0.4, 14]} />
       </mesh>
+      <PortalToSquare M={M} />
     </>
   )
 }

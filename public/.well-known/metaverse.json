@@ -1,0 +1,18 @@
+{
+  "protocol": "mvw/0.1",
+  "name": "HPA Office",
+  "description": "A small procedural office world rebuilt from a phone scan and photos.",
+  "spawns": {
+    "default": "Inside the office, facing the desk and room.",
+    "from_square": "Just inside the office door, next to the portal back to Metaverse Square."
+  },
+  "portals": [
+    {
+      "id": "to_square",
+      "label": "Metaverse Square",
+      "href": "https://zlisto.github.io/hub_world/",
+      "spawn": "by_hpa_office",
+      "where": "The glowing doorway by the office door."
+    }
+  ]
+}

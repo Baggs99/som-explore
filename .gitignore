@@ -8,8 +8,13 @@ reference/
 # large raw capture media + source scans/plans (kept local, not for the public repo)
 First floor photos/
 General-Layout-of-SOM/
+McNays-Videos/
+pilot-videos/
+recon/
 *.HEIC
 *.heic
+*.MOV
+*.mov
 *.MP4
 *.mp4
 *.usdz

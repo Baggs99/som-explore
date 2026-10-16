@@ -7,9 +7,19 @@ export default defineConfig({
   plugins: [react()],
   server: {
     port: 5173,
-    // don't watch PDFs/reference assets: they can be locked (open in a viewer)
-    // and a locked file makes the watcher throw EBUSY and kill the dev server
-    watch: { ignored: ['**/*.pdf', '**/reference/**'] },
+    // Don't watch raw capture/reference assets: large or locked media files can make the
+    // Windows watcher throw EBUSY and kill the dev server.
+    watch: {
+      ignored: [
+        '**/reference/**',
+        '**/First floor photos/**',
+        '**/General-Layout-of-SOM/**',
+        '**/McNays-Videos/**',
+        '**/pilot-videos/**',
+        '**/recon/**',
+        '**/*.{pdf,HEIC,heic,MP4,mp4,MOV,mov,usdz}',
+      ],
+    },
   },
   build: {
     rollupOptions: {

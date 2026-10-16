@@ -2,7 +2,8 @@ import { useEffect, useMemo, useRef } from 'react'
 import { useFrame, useThree } from '@react-three/fiber'
 import * as THREE from 'three'
 import { PointerLockControls } from 'three/examples/jsm/controls/PointerLockControls.js'
-import { ROOM, EYE, COLLIDERS } from './OfficeWorld.jsx'
+import { ROOM, EYE, COLLIDERS, SPAWNS } from './OfficeWorld.jsx'
+import { pickSpawn, presence } from './mvw.js'
 
 const R = 0.3 // player radius
 const JUMP = 4.2
@@ -36,12 +37,13 @@ export default function OfficePlayer({ lockRef, onLock }) {
   const keys = useRef({})
   const vy = useRef(0)
   const jumpY = useRef(0)
+  const lastWhere = useRef('')
   const fwd = useMemo(() => new THREE.Vector3(), [])
 
   useEffect(() => {
-    const spawn = [0.9, EYE, ROOM.d / 2 - 0.7]
-    camera.position.set(...spawn)
-    camera.lookAt(-1.1, EYE, -2.4)
+    const spawn = pickSpawn(SPAWNS)
+    camera.position.set(...spawn.pos)
+    camera.lookAt(...spawn.lookAt)
     lockRef.current = () => controls.lock()
     const on = () => onLock(true)
     const off = () => {
@@ -68,6 +70,16 @@ export default function OfficePlayer({ lockRef, onLock }) {
 
   useFrame((_, rawDt) => {
     const dt = Math.min(rawDt, 0.05)
+    const where =
+      camera.position.z > ROOM.d / 2 - 1.1
+        ? 'HPA Office · by the portal to Metaverse Square'
+        : camera.position.x < -0.6
+          ? 'HPA Office · at the desk'
+          : 'HPA Office · in the office'
+    if (where !== lastWhere.current) {
+      lastWhere.current = where
+      presence(where)
+    }
     if (!controls.isLocked) return
     camera.getWorldDirection(fwd)
     fwd.y = 0
