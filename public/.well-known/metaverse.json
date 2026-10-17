@@ -13,6 +13,13 @@
       "href": "https://zlisto.github.io/hub_world/",
       "spawn": "by_hpa_office",
       "where": "The glowing doorway by the office door."
+    },
+    {
+      "id": "to_som",
+      "label": "Yale SOM · Evans Hall",
+      "href": "https://zlisto.github.io/evans-hall-3d/",
+      "spawn": "from_hpa",
+      "where": "The glowing doorway on the east wall."
     }
   ]
 }

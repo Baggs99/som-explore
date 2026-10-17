@@ -175,6 +175,58 @@ function PortalToSquare({ M }) {
   )
 }
 
+function PortalToSom({ M }) {
+  const fired = useRef(false)
+  const label = useMemo(() => portalTexture('Yale SOM', 'Evans Hall portal'), [])
+  const swirl = useMemo(() => {
+    const c = document.createElement('canvas')
+    c.width = c.height = 256
+    const g = c.getContext('2d')
+    const bg = g.createRadialGradient(128, 128, 10, 128, 128, 128)
+    bg.addColorStop(0, '#fff')
+    bg.addColorStop(0.35, '#4fb6ff')
+    bg.addColorStop(1, '#06121a')
+    g.fillStyle = bg
+    g.fillRect(0, 0, 256, 256)
+    g.strokeStyle = 'rgba(255,255,255,0.55)'
+    g.lineWidth = 5
+    for (let arm = 0; arm < 4; arm++) {
+      g.beginPath()
+      for (let t = 0; t < 1; t += 0.01) {
+        const a = arm * (Math.PI / 2) + t * 7
+        const r = 8 + t * 125
+        const x = 128 + Math.cos(a) * r
+        const y = 128 + Math.sin(a) * r
+        t ? g.lineTo(x, y) : g.moveTo(x, y)
+      }
+      g.stroke()
+    }
+    const tex = new THREE.CanvasTexture(c)
+    tex.colorSpace = THREE.SRGBColorSpace
+    return tex
+  }, [])
+  useFrame(({ camera, clock }) => {
+    swirl.rotation = clock.elapsedTime * 1.15
+    const inPortal = camera.position.x > east - 0.65 && Math.abs(camera.position.z + 1.3) < 0.55
+    if (inPortal && !fired.current) {
+      fired.current = true
+      navigate('https://zlisto.github.io/evans-hall-3d/', 'from_hpa', 'default')
+      setTimeout(() => (fired.current = false), 1600)
+    }
+  })
+  return (
+    <group position={[east - 0.07, 0, -1.3]} rotation={[0, Math.PI / 2, 0]}>
+      <Box p={[0, 1.18, 0]} s={[0.92, 2.25, 0.06]} m={new THREE.MeshBasicMaterial({ map: swirl, transparent: true, opacity: 0.72 })} />
+      <Box p={[0, 2.55, -0.02]} s={[1.35, 0.1, 0.08]} m={M.metal} />
+      <Box p={[-0.51, 1.25, -0.02]} s={[0.1, 2.45, 0.08]} m={M.metal} />
+      <Box p={[0.51, 1.25, -0.02]} s={[0.1, 2.45, 0.08]} m={M.metal} />
+      <mesh position={[0, 2.95, -0.07]} material={new THREE.MeshBasicMaterial({ map: label, transparent: true })}>
+        <planeGeometry args={[1.55, 0.48]} />
+      </mesh>
+    </group>
+  )
+}
+
 function OfficeChair({ p, M }) {
   const [x, z] = p
   return (
@@ -301,6 +353,7 @@ export default function OfficeWorld() {
         <cylinderGeometry args={[0.15, 0.13, 0.4, 14]} />
       </mesh>
       <PortalToSquare M={M} />
+      <PortalToSom M={M} />
     </>
   )
 }
